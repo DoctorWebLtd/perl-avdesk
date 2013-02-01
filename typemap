@@ -1,0 +1,12 @@
+TYPEMAP
+dwavd::admin	O_OBJECT
+dwavd::group	O_OBJECT
+dwavd::server   O_OBJECT
+dwavd::tariff	O_OBJECT
+dwavd::station	O_OBJECT
+
+dwavdapi_components_bit	    T_ENUM
+dwavdapi_components_values	T_ENUM
+dwavdapi_counties	        T_ENUM
+dwavdapi_message			T_ENUM
+dwavdapi_history_opers		T_ENUM
