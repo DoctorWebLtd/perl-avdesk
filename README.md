@@ -7,15 +7,14 @@ integration of thirdparty applications with AV-Desk easy as never before.
 
 Internally it uses dwavdapi library to make a dialog with AV-Desk server through its XML API.
 
-
 INSTALLATION
 ============
 
 To install this module type the following:
 
-   * perl Makefile.PL
-   * make
-   * make install
+   * `perl Makefile.PL`
+   * `make`
+   * `make install`
 
 DEPENDENCIES
 ============
