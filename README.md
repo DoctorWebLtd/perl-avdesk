@@ -16,13 +16,12 @@ To install this module type the following:
    * `make`
    * `make install`
 
-DEPENDENCIES
+REQUIREMENTS
 ============
 
-This module requires these other modules and libraries:
-
-  * Dr.Web dwavdapi library
-  * Dr.Web dwavdapi library devel
+  * Dr.Web AV-Desk - http://ru.av-desk.com/support/demo/?lng=en
+  * Dr.Web `dwavdapi` library - http://download.geo.drweb.com/pub/drweb/avd/libs/libdwavdapi/
+  * Dr.Web `dwavdapi` library headers (dev package)
 
 Copyright
 =========
