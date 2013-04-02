@@ -304,7 +304,7 @@ ok($admin->set_password("ch_password"), "Admin: set password /update");
 ok($admin->set_last_name("ch_last_name"), "Admin: set last name /update");
 ok($admin->set_middle_name( "ch_middle_name"), "Admin: set middle name /update");
 ok($admin->set_readonly(1), "Admin: set readonly /update");
-ok(!$admin->set_readonly(10), "Admin: set readonly /update");
+ok($admin->set_readonly(10), "Admin: set readonly /update");
 ok($admin->set_readonly(0), "Admin: set readonly /update");
 ok($admin->delete_from_group($parent_group_id), "Admin: delete from group /update");
 ok($admin->set_description("ch_description"), "Admin: set description /update");
@@ -319,10 +319,9 @@ ok($admin->middle_name() eq "ch_middle_name", "Admin: get middle name.");
 ok($admin->description() eq "ch_description", "Admin: get description.");
 ok($admin->created_time(), "Admin: get created time.");
 ok($admin->modified_time() > $admin->created_time(), "Admin: get modified time.");
-ok(!$admin->is_global_admin(), "Admin: get type global admin.");
-ok($admin->is_group_admin(), "Admin: get type group admin.");
-# проверка групп
-ok($admin->groups_count() == 1, "Admin: get groups count.");
+ok($admin->is_global_admin(), "Admin: get type global admin.");
+ok(!$admin->is_group_admin(), "Admin: get type group admin.");
+ok($admin->groups_count() == 0, "Admin: get groups count.");
 
 # Admin list
 $admins = $server->admins();
