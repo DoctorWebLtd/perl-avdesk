@@ -1123,7 +1123,7 @@ Returns: 1 if operation is successful, 0 - otherwise.
 bool
 set_id(self, val)
   dwavd::admin self
-  const char * val
+  const char  *val
 CODE:
   RETVAL = !dwavdapi_admin_set_id(self->admin, val);
 OUTPUT:
@@ -1274,12 +1274,15 @@ SV *
 groups(self)
   dwavd::admin self
 PREINIT:
-  unsigned long       i;
-  const unsigned long groups_count = dwavdapi_admin_groups_count(self->admin);
-  char              **groups       = dwavdapi_admin_groups_array(self->admin);
-  const char         *group        = NULL;
-  AV                 *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned long i;
+  unsigned long groups_count;
+  char        **groups;
+  const char   *group  = NULL;
+  AV           *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  groups_count = dwavdapi_admin_groups_count(self->admin);
+  groups       = dwavdapi_admin_groups_array(self->admin);
+
   for (i = 0; i < groups_count; i++) {
     group = *(groups + i);
     av_push(result, newSVpv(group, strlen(group)));
@@ -1316,7 +1319,7 @@ See also: delete_from_group()
 bool
 add_to_group(self , val)
   dwavd::admin self
-  const char * val
+  const char  *val
 CODE:
   RETVAL = !dwavdapi_admin_add_to_group(self->admin, val);
 OUTPUT:
@@ -1978,13 +1981,15 @@ SV *
 packages(self)
   dwavd::station self
 PREINIT:
-  dwavdapi_list    *packages = dwavdapi_station_packages_list(self->station);
-  dwavdapi_package *package  = NULL;
-  HV               *pachash  = NULL;
-  AV               *results  = (AV *)sv_2mortal((SV *)newAV());
+  dwavdapi_list    *packages;
+  dwavdapi_package *package = NULL;
+  HV               *pachash = NULL;
+  AV               *results = (AV *)sv_2mortal((SV *)newAV());
   const char *url;
   unsigned    type;
 CODE:
+  packages = dwavdapi_station_packages_list(self->station);
+
   if (packages) {
     do {
       package = (dwavdapi_package *)dwavdapi_list_current_data(packages);
@@ -2088,12 +2093,15 @@ SV *
 groups(self)
   dwavd::station self
 PREINIT:
-  unsigned       i;
-  const unsigned groups_count = dwavdapi_station_groups_count(self->station);
-  char         **groups       = dwavdapi_station_groups_array(self->station);
-  char          *group        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned i;
+  unsigned groups_count;
+  char   **groups;
+  char    *group  = NULL;
+  AV      *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  groups_count = dwavdapi_station_groups_count(self->station);
+  groups       = dwavdapi_station_groups_array(self->station);
+
   for (i = 0; i < groups_count; i++) {
     group = *(groups + i);
     av_push(result, newSVpv(group, strlen(group)));
@@ -2206,12 +2214,15 @@ SV*
 emails(self)
   dwavd::station self
 PREINIT:
-  unsigned       i;
-  const unsigned emails_count = dwavdapi_station_emails_count(self->station);
-  char         **emails       = dwavdapi_station_emails_array(self->station);
-  const char    *email        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    emails_count;
+  char      **emails;
+  const char *email  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  emails_count = dwavdapi_station_emails_count(self->station);
+  emails       = dwavdapi_station_emails_array(self->station);
+
   for (i = 0; i < emails_count; i++) {
     email = *(emails + i);
     av_push(result, newSVpv(email, strlen(email)));
@@ -2928,10 +2939,11 @@ SV *
 state(self)
   dwavd::station self
 PREINIT:
-  HV         *rh    = (HV *)sv_2mortal((SV *)newHV());
-  int         code  = dwavdapi_station_state(self->station);
+  HV         *rh = (HV *)sv_2mortal((SV *)newHV());
+  int         code;
   const char *state;
 CODE:
+  code = dwavdapi_station_state(self->station);
   hv_store(rh, "code", sizeof("code") - 1, newSViv(code), 0);
 
   state = (char *)dwavdapi_station_state_str(self->station);
@@ -3037,9 +3049,9 @@ Example:
 
 SV *
 bases(self)
-dwavd::station self
+  dwavd::station self
 PREINIT:
-  dwavdapi_list *lst       = dwavdapi_station_bases_list(self->station);
+  dwavdapi_list *lst;
   dwavdapi_base *station   = NULL;
   HV            *rh        = NULL;
   AV            *results   = (AV *)sv_2mortal((SV *)newAV());
@@ -3048,6 +3060,8 @@ PREINIT:
   unsigned       created;
   unsigned       viruses;
 CODE:
+  lst = dwavdapi_station_bases_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_base *)dwavdapi_list_current_data(lst);
@@ -3106,7 +3120,7 @@ SV *
 modules(self)
   dwavd::station self
 PREINIT:
-  dwavdapi_list   *lst     = dwavdapi_station_modules_list(self->station);
+  dwavdapi_list   *lst;
   dwavdapi_module *station = NULL;
   HV              *rh      = NULL;
   AV              *results = (AV *)sv_2mortal((SV *)newAV());
@@ -3118,6 +3132,8 @@ PREINIT:
   const char      *name;
   const char      *version;
 CODE:
+  lst = dwavdapi_station_modules_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_module *)dwavdapi_list_current_data(lst);
@@ -3182,7 +3198,7 @@ SV *
 components(self)
   dwavd::station self
 PREINIT:
-  dwavdapi_list      *lst     = dwavdapi_station_components_list(self->station);
+  dwavdapi_list      *lst;
   dwavdapi_component *station = NULL;
   HV                 *rh      = NULL;
   AV                 *results = (AV *)sv_2mortal((SV *)newAV());
@@ -3190,6 +3206,8 @@ PREINIT:
   unsigned            code;
   const char         *inherited_group_id;
 CODE:
+  lst = dwavdapi_station_components_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_component *)dwavdapi_list_current_data(lst);
@@ -3246,7 +3264,7 @@ SV *
 components_running(self)
 dwavd::station self
 PREINIT:
-  dwavdapi_list              *lst     = dwavdapi_station_components_running_list(self->station);
+  dwavdapi_list              *lst;
   dwavdapi_running_component *station = NULL;
   HV                         *rh      = NULL;
   AV                         *results = (AV *)sv_2mortal((SV *)newAV());
@@ -3256,6 +3274,8 @@ PREINIT:
   const char                 *user;
   const char                 *params;
 CODE:
+  lst = dwavdapi_station_components_running_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_running_component *)dwavdapi_list_current_data(lst);
@@ -3315,7 +3335,7 @@ SV *
 components_installed(self)
   dwavd::station self
 PREINIT:
-  dwavdapi_list                *lst     = dwavdapi_station_components_installed_list(self->station);
+  dwavdapi_list                *lst;
   dwavdapi_installed_component *station = NULL;
   HV                           *rh      = NULL;
   AV                           *results = (AV *)sv_2mortal((SV *)newAV());
@@ -3324,6 +3344,8 @@ PREINIT:
   const char                   *path;
   const char                   *server;
 CODE:
+  lst = dwavdapi_station_components_installed_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_installed_component *)dwavdapi_list_current_data(lst);
@@ -3460,7 +3482,7 @@ SV*
 rights(self)
   dwavd::station self
 PREINIT:
-  dwavdapi_list  *lst     = dwavdapi_station_rights_list(self->station);
+  dwavdapi_list  *lst;
   dwavdapi_right *station = NULL;
   HV             *rh      = NULL;
   AV             *results = (AV *)sv_2mortal((SV *)newAV());
@@ -3468,6 +3490,8 @@ PREINIT:
   unsigned        code;
   const char     *inherited_group_id;
 CODE:
+  lst = dwavdapi_station_rights_list(self->station);
+
   if (lst) {
     do {
       station = (dwavdapi_right *)dwavdapi_list_current_data(lst);
@@ -3521,11 +3545,13 @@ SV *
 key(self)
   dwavd::station self
 PREINIT:
-  HV           *rh  = (HV *)sv_2mortal((SV *)newHV());
-  dwavdapi_key *key = dwavdapi_station_key(self->station);
+  HV           *rh = (HV *)sv_2mortal((SV *)newHV());
+  dwavdapi_key *key;
   const char   *inherited_group_id;
   const char   *ckey;
 CODE:
+  key = dwavdapi_station_key(self->station);
+
   inherited_group_id = key->inherited_group_id;
   if (inherited_group_id)
     hv_store(rh,
@@ -4221,12 +4247,15 @@ SV*
 child_groups(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned groups_count = dwavdapi_group_child_groups_count(self->group);
-  char         **child_groups = dwavdapi_group_child_groups_array(self->group);
-  const char    *group        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    groups_count;
+  char      **child_groups;
+  const char *group  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  groups_count = dwavdapi_group_child_groups_count(self->group);
+  child_groups = dwavdapi_group_child_groups_array(self->group);
+
   for (i = 0; i < groups_count; i++) {
     group = *(child_groups + i);
     av_push(result, newSVpv(group, strlen(group)));
@@ -4281,12 +4310,15 @@ SV*
 emails(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned emails_count = dwavdapi_group_emails_count(self->group);
-  char         **emails       = dwavdapi_group_emails_array(self->group);
-  const char    *email        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    emails_count;
+  char      **emails;
+  const char *email  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  emails_count = dwavdapi_group_emails_count(self->group);
+  emails       = dwavdapi_group_emails_array(self->group);
+
   for (i = 0; i < emails_count; i++) {
     email = *(emails + i);
     av_push(result, newSVpv(email, strlen(email)));
@@ -4519,12 +4551,15 @@ SV *
 admins(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned admins_count = dwavdapi_group_admins_count(self->group);
-  char         **admins       = dwavdapi_group_admins_array(self->group);
-  const char    *admin        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    admins_count;
+  char      **admins;
+  const char *admin  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  admins_count = dwavdapi_group_admins_count(self->group);
+  admins       = dwavdapi_group_admins_array(self->group);
+
   for (i = 0; i < dwavdapi_group_admins_count(self->group); i++) {
     admin = *(admins + i);
     av_push(result, newSVpv(admin, strlen(admin)));
@@ -4572,12 +4607,15 @@ SV*
 stations(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned stations_count = dwavdapi_group_stations_count(self->group);
-  char         **stations       = dwavdapi_group_stations_array(self->group);
-  const char    *station        = NULL;
-  AV            *result         = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    stations_count;
+  char      **stations;
+  const char *station = NULL;
+  AV         *result  = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  stations_count = dwavdapi_group_stations_count(self->group);
+  stations       = dwavdapi_group_stations_array(self->group);
+
   for (i = 0; i < stations_count; i++) {
     station = *(stations + i);
     av_push(result, newSVpv(station, strlen(station)));
@@ -4612,13 +4650,15 @@ SV *
 rights(self)
   dwavd::group self
 PREINIT:
-  dwavdapi_list  *lst     = dwavdapi_group_rights_list(self->group);
+  dwavdapi_list  *lst;
   dwavdapi_right *group   = NULL;
   HV             *rh      = NULL;
   AV             *results = (AV *)sv_2mortal((SV *)newAV());
   unsigned        code;
   const char     *inherited_group_id;
 CODE:
+  lst = dwavdapi_group_rights_list(self->group);
+
   if (lst) {
     do {
       group = (dwavdapi_right *)dwavdapi_list_current_data(lst);
@@ -4670,11 +4710,13 @@ SV*
 key(self)
   dwavd::group self
 PREINIT:
-  HV           *rh  = (HV *)sv_2mortal((SV *)newHV());
-  dwavdapi_key *key = dwavdapi_group_key(self->group);
+  HV           *rh = (HV *)sv_2mortal((SV *)newHV());
+  dwavdapi_key *key;
   const char   *inherited_group_id;
   const char   *ckey;
 CODE:
+  key = dwavdapi_group_key(self->group);
+
   inherited_group_id = key->inherited_group_id;
   if (inherited_group_id)
     hv_store(rh,
@@ -5433,12 +5475,15 @@ SV*
 child_groups(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned groups_count = dwavdapi_group_child_groups_count(self->group);
-  char         **child_groups = dwavdapi_group_child_groups_array(self->group);
-  const char    *group        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    groups_count;
+  char      **child_groups;
+  const char *group  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  groups_count = dwavdapi_group_child_groups_count(self->group);
+  child_groups = dwavdapi_group_child_groups_array(self->group);
+
   for (i = 0; i < groups_count; i++) {
     group = *(child_groups + i);
     av_push(result, newSVpv(group, strlen(group)));
@@ -5494,12 +5539,15 @@ SV *
 emails(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned emails_count = dwavdapi_group_emails_count(self->group);
-  char         **emails       = dwavdapi_group_emails_array(self->group);
-  const char    *email        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    emails_count;
+  char      **emails;
+  const char *email  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  emails_count = dwavdapi_group_emails_count(self->group);
+  emails       = dwavdapi_group_emails_array(self->group);
+
   for (i = 0; i < emails_count; i++) {
     email = *(emails + i);
     av_push(result, newSVpv(email, strlen(email)));
@@ -5632,7 +5680,7 @@ SV *
 components(self)
 dwavd::group self
 PREINIT:
-  dwavdapi_list      *lst     = dwavdapi_group_components_list(self->group);
+  dwavdapi_list      *lst;
   dwavdapi_component *group   = NULL;
   HV                 *rh      = NULL;
   AV                 *results = (AV *)sv_2mortal((SV *)newAV());
@@ -5640,6 +5688,8 @@ PREINIT:
   unsigned            val;
   const char         *inherited_group_id;
 CODE:
+  lst = dwavdapi_group_components_list(self->group);
+
   if (lst) {
     do {
       group = (dwavdapi_component *)dwavdapi_list_current_data(lst);
@@ -5689,12 +5739,15 @@ SV*
 admins(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned admins_count = dwavdapi_group_admins_count(self->group);
-  char         **admins       = dwavdapi_group_admins_array(self->group);
-  const char    *admin        = NULL;
-  AV            *result       = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    admins_count;
+  char      **admins;
+  const char *admin  = NULL;
+  AV         *result = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  admins_count = dwavdapi_group_admins_count(self->group);
+  admins       = dwavdapi_group_admins_array(self->group);
+
   for (i = 0; i < admins_count; i++) {
     admin = *(admins + i);
     av_push(result, newSVpv(admin, strlen(admin)));
@@ -5741,12 +5794,15 @@ SV *
 stations(self)
   dwavd::group self
 PREINIT:
-  unsigned       i;
-  const unsigned stations_count = dwavdapi_group_stations_count(self->group);
-  char         **stations       = dwavdapi_group_stations_array(self->group);
-  const char    *station        = NULL;
-  AV            *result         = (AV *)sv_2mortal((SV *)newAV());
+  unsigned    i;
+  unsigned    stations_count;
+  char      **stations;
+  const char *station = NULL;
+  AV         *result  = (AV *)sv_2mortal((SV *)newAV());
 CODE:
+  stations_count = dwavdapi_group_stations_count(self->group);
+  stations       = dwavdapi_group_stations_array(self->group);
+
   for (i = 0; i < stations_count; i++) {
     station = *(stations + i);
     av_push(result, newSVpv(station, strlen(station)));
@@ -5797,13 +5853,15 @@ SV *
 rights(self)
   dwavd::group self
 PREINIT:
-  dwavdapi_list  *lst     = dwavdapi_group_rights_list(self->group);
+  dwavdapi_list  *lst;
   dwavdapi_right *group   = NULL;
   HV             *rh      = NULL;
   AV             *results = (AV *)sv_2mortal((SV *)newAV());
   unsigned        code;
   const char     *inherited_group_id;
 CODE:
+  lst = dwavdapi_group_rights_list(self->group);
+  
   if (lst) {
     do {
       group = (dwavdapi_right *)dwavdapi_list_current_data(lst);
