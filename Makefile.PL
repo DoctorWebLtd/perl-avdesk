@@ -5,10 +5,26 @@ use Config;
 my $project = 'DWAVDesk';
 
 sub libs {
-  if (($Config{'archname'} =~ /64/) && ($^O =~ /linux/i)) {
-    '-L/usr/local/lib64  -ldwavdapi';
+  if ($^O =~ /linux/i) {
+    if (($Config{'archname'} =~ /64/)) {
+      '-L/usr/local/lib64  -ldwavdapi';
+    } else {
+      '-L/usr/local/lib -ldwavdapi';
+    }
+  } elsif ($^O =~ /mswin32/i || $^O =~ /cygwin/i) {
+    '-L .\\libdwavdapi\\lib dwavdapi.lib ';
   } else {
-    '-L/usr/local/lib -ldwavdapi';
+    die("Unsupported system: $^O");
+  }
+}
+
+sub includes {
+  if ($^O =~ /linux/i) {
+    '-I.';
+  } elsif ($^O =~ /mswin32/i || $^O =~ /cygwin/i) {
+    '-I .\\libdwavdapi\\include';
+  } else {
+    die("Unknown system: $^O"); 
   }
 }
 
@@ -17,13 +33,9 @@ sub libs {
 WriteMakefile(
   NAME              => $project,
   VERSION_FROM      => 'lib/'.$project.'.pm', # finds $VERSION
-  PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-  ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-    (ABSTRACT_FROM  => 'lib/'.$project.'.pm', # retrieve abstract from module
-     AUTHOR         => 'Yuliya Belyaeva <y.belyaeva@drweb.com>') : ()),
+  AUTHOR            => 'Yuliya Belyaeva <y.belyaeva@drweb.com>',
   LIBS              => [libs()], # e.g., '-lm'
-  DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-  INC               => '-I.', # e.g., '-I. -I/usr/include/other'
+  INC               => includes(), # e.g., '-I. -I/usr/include/other'
   XSPROTOARG        => '-noprototypes',
   TYPEMAPS          => ['perlobject.map'],
   PERL_MALLOC_OK    => 1

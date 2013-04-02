@@ -836,7 +836,7 @@ The following keys are added if server resource handle supplied:
 
 SV *
 get_error(...)
-INIT:
+PREINIT:
   int   errcode = errno;
   char *error   = NULL;
   HV   *array   = (HV *)sv_2mortal((SV *)newHV());
@@ -845,7 +845,7 @@ CODE:
 
   dwavdapi_strerror(&error, errcode);
   hv_store(array, "string", sizeof("string") - 1, newSVpv(error, strlen(error)), 0);
-  dwavdapi_strfree(&error);
+  free(error);
 
   if (items > 0 && sv_isobject(ST(0))) {
     dwavd__server handle = INT2PTR(dwavd__server, SvIV((SV *)SvRV(ST(0))));
@@ -855,7 +855,7 @@ CODE:
 
     dwavdapi_srv_error(handle, &error);
     hv_store(array, "srvstring", sizeof("srvstring") - 1, newSVpv(error, strlen(error)), 0);
-    dwavdapi_strfree(&error);
+    free(error);
   }
 
   RETVAL = newRV((SV *)array);
@@ -955,7 +955,7 @@ dwavd::admin
 new(CLASS, handle)
   char *CLASS
   dwavd::server handle
-INIT:
+PREINIT:
   dwavd_admin *admin = NULL;
 CODE:
   if (!handle)
@@ -963,7 +963,7 @@ CODE:
 
   Newx(admin, (int)sizeof(dwavd_admin), dwavd_admin);
 
-  if (admin && (admin->admin  = dwavdapi_admin_init())) {
+  if (admin && (admin->admin = dwavdapi_admin_init())) {
     admin->handle = handle;
   }
   else {
@@ -1012,12 +1012,12 @@ Returns: 1 if operation is successful, 0 - otherwise.
 bool
 create(self)
   dwavd::admin self
-INIT:
+PREINIT:
   char *id = NULL;
 CODE:
   if (dwavdapi_admin_add(self->handle, self->admin, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_admin_get_info(self->handle, &self->admin, dwavdapi_admin_login(self->admin));
-    dwavdapi_strfree(&id);
+    free(id);
   }
   else {
     RETVAL = 0;
@@ -1273,7 +1273,7 @@ Example:
 SV *
 groups(self)
   dwavd::admin self
-INIT:
+PREINIT:
   unsigned long       i;
   const unsigned long groups_count = dwavdapi_admin_groups_count(self->admin);
   char              **groups       = dwavdapi_admin_groups_array(self->admin);
@@ -1680,7 +1680,7 @@ dwavd::station
 new(CLASS, handle)
   char *CLASS
   dwavd::server handle
-INIT:
+PREINIT:
   dwavd_station *station = NULL;
 CODE:
   if (!handle)
@@ -1738,12 +1738,12 @@ Returns: 1 if operation is successful, 0 - otherwise.
 bool
 create(self)
   dwavd::station self
-INIT:
+PREINIT:
   char *id = NULL;
 CODE:
   if (dwavdapi_station_add(self->handle, self->station, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_station_get_info(self->handle, &self->station, id);
-    dwavdapi_strfree(&id);
+    free(id);
   }
   else {
     RETVAL = 0;
@@ -1977,7 +1977,7 @@ Should be used with station object initialized by new().
 SV *
 packages(self)
   dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list    *packages = dwavdapi_station_packages_list(self->station);
   dwavdapi_package *package  = NULL;
   HV               *pachash  = NULL;
@@ -2087,7 +2087,7 @@ Example:
 SV *
 groups(self)
   dwavd::station self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned groups_count = dwavdapi_station_groups_count(self->station);
   char         **groups       = dwavdapi_station_groups_array(self->station);
@@ -2205,7 +2205,7 @@ Example:
 SV* 
 emails(self)
   dwavd::station self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned emails_count = dwavdapi_station_emails_count(self->station);
   char         **emails       = dwavdapi_station_emails_array(self->station);
@@ -2927,7 +2927,7 @@ Example:
 SV *
 state(self)
   dwavd::station self
-INIT:
+PREINIT:
   HV         *rh    = (HV *)sv_2mortal((SV *)newHV());
   int         code  = dwavdapi_station_state(self->station);
   const char *state;
@@ -3038,7 +3038,7 @@ Example:
 SV *
 bases(self)
 dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list *lst       = dwavdapi_station_bases_list(self->station);
   dwavdapi_base *station   = NULL;
   HV            *rh        = NULL;
@@ -3105,7 +3105,7 @@ Example:
 SV *
 modules(self)
   dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list   *lst     = dwavdapi_station_modules_list(self->station);
   dwavdapi_module *station = NULL;
   HV              *rh      = NULL;
@@ -3181,7 +3181,7 @@ Example:
 SV *
 components(self)
   dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list      *lst     = dwavdapi_station_components_list(self->station);
   dwavdapi_component *station = NULL;
   HV                 *rh      = NULL;
@@ -3245,7 +3245,7 @@ Example:
 SV *
 components_running(self)
 dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list              *lst     = dwavdapi_station_components_running_list(self->station);
   dwavdapi_running_component *station = NULL;
   HV                         *rh      = NULL;
@@ -3314,7 +3314,7 @@ Example:
 SV *
 components_installed(self)
   dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list                *lst     = dwavdapi_station_components_installed_list(self->station);
   dwavdapi_installed_component *station = NULL;
   HV                           *rh      = NULL;
@@ -3391,7 +3391,7 @@ history(self, till, from, oprs)
   time_t                 from
   time_t                 till
   dwavdapi_history_opers oprs
-INIT:
+PREINIT:
   dwavdapi_list    *lst     = NULL;
   dwavdapi_history *station = NULL;
   HV               *rh      = NULL;
@@ -3459,7 +3459,7 @@ Example:
 SV* 
 rights(self)
   dwavd::station self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = dwavdapi_station_rights_list(self->station);
   dwavdapi_right *station = NULL;
   HV             *rh      = NULL;
@@ -3520,7 +3520,7 @@ Example:
 SV *
 key(self)
   dwavd::station self
-INIT:
+PREINIT:
   HV           *rh  = (HV *)sv_2mortal((SV *)newHV());
   dwavdapi_key *key = dwavdapi_station_key(self->station);
   const char   *inherited_group_id;
@@ -3582,9 +3582,9 @@ send_message(self, message, url_text="", url="", logo="", logo_url="", logo_text
   const char     *logo
   const char     *logo_url
   const char     *logo_text
-CODE:
+PREINIT:
   dwavdapi_message *mes = dwavdapi_message_init();
-
+CODE:
   if (!mes)
     croak("Unable to send message because of memory allocation error.");
 
@@ -3627,110 +3627,122 @@ statistics(self, from, till, virtop)
   unsigned int   from
   unsigned int   till
   unsigned int   virtop
-INIT:
-  dwavdapi_station_statistics *tmp     = NULL;
-  HV                          *results = NULL;
+PREINIT:
+  dwavdapi_station_statistics   *tmp     = NULL;
+  HV                            *results;
+  
+  double                         large_stat;
+  unsigned long                  stat;
+
+  dwavdapi_statistics_scans      scans_lst;
+  HV                            *scans;
+
+  dwavdapi_statistics_infections infections_lst;
+  HV                            *infections;
+
+  dwavdapi_list                 *objects;
+  dwavdapi_infected_object      *object;
+  AV                            *objects_arr;
+  HV                            *object_hash;
+  
+  dwavdapi_list                 *viruses;
+  dwavdapi_virus                *virus;
+  AV                            *viruses_arr;
+  HV                            *virus_hash;
 CODE:
   if (dwavdapi_station_get_statistics(self->handle, &tmp, self->station->id, from, till, virtop) == DWAVDAPI_SUCCESS && tmp) {
     results = (HV *)sv_2mortal((SV *)newHV());
 
     /* Scan statistics */
 
-    dwavdapi_statistics_scans scans_lst = dwavdapi_station_statistics_scans(tmp);
-    HV                       *scans     = (HV *)sv_2mortal((SV *)newHV());
+    scans_lst = dwavdapi_station_statistics_scans(tmp);
+    scans     = (HV *)sv_2mortal((SV *)newHV());
 
-    double scans_size = scans_lst.size;
-    hv_store(scans, "size", sizeof("size") - 1, newSVnv(scans_size), 0);
+    large_stat = scans_lst.size;
+    hv_store(scans, "size", sizeof("size") - 1, newSVnv(large_stat), 0);
 
-    double scans_files = scans_lst.files;
-    hv_store(scans, "files", sizeof("files") - 1, newSVnv(scans_files), 0);
+    large_stat = scans_lst.files;
+    hv_store(scans, "files", sizeof("files") - 1, newSVnv(large_stat), 0);
 
-    unsigned long scans_infected = scans_lst.infected;
-    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(scans_infected), 0);
+    stat = scans_lst.infected;
+    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_deleted = scans_lst.deleted;
-    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(scans_deleted), 0);
+    stat = scans_lst.deleted;
+    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_moved = scans_lst.moved;
-    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(scans_moved), 0);
+    stat = scans_lst.moved;
+    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_cured = scans_lst.cured;
-    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(scans_cured), 0);
+    stat = scans_lst.cured;
+    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_errors = scans_lst.errors;
-    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(scans_errors), 0);
+    stat = scans_lst.errors;
+    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_renamed = scans_lst.renamed;
-    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(scans_renamed), 0);
+    stat = scans_lst.renamed;
+    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_locked = scans_lst.locked;
-    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(scans_locked), 0);
+    stat = scans_lst.locked;
+    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
     hv_store(results, "scans", sizeof("scans") - 1, newRV((SV *)scans), 0);
 
     /* Infections */
 
-    dwavdapi_statistics_infections infections_lst = dwavdapi_station_statistics_infections(tmp);
-    HV                            *infections     = (HV *)sv_2mortal((SV *)newHV());
+    infections_lst = dwavdapi_station_statistics_infections(tmp);
+    infections     = (HV *)sv_2mortal((SV *)newHV());
 
-    unsigned long infections_deleted = infections_lst.deleted;
-    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(infections_deleted), 0);
+    stat = infections_lst.deleted;
+    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_cured = infections_lst.cured;
-    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(infections_cured), 0);
+    stat = infections_lst.cured;
+    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_incurable = infections_lst.incurable;
-    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(infections_incurable), 0);
+    stat = infections_lst.incurable;
+    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_moved = infections_lst.moved;
-    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(infections_moved), 0);
+    stat = infections_lst.moved;
+    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_locked = infections_lst.locked;
-    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(infections_locked), 0);
+    stat = infections_lst.locked;
+    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_renamed = infections_lst.renamed;
-    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(infections_renamed), 0);
+    stat = infections_lst.renamed;
+    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_errors = infections_lst.errors;
-    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(infections_errors), 0);
+    stat = infections_lst.errors;
+    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_ignored = infections_lst.ignored;
-    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(infections_ignored), 0);
+    stat = infections_lst.ignored;
+    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_total = infections_lst.total;
-    hv_store(infections, "total", sizeof("total") - 1, newSVuv(infections_total), 0);
+    stat = infections_lst.total;
+    hv_store(infections, "total", sizeof("total") - 1, newSVuv(stat), 0);
 
     hv_store(results, "infections", sizeof("infections") - 1, newRV((SV *)infections), 0);
 
     /* Infected objects */
 
-    dwavdapi_list            *objects = NULL;
-    dwavdapi_infected_object *object  = NULL;
-
-    dwavdapi_list  *viruses = dwavdapi_station_statistics_viruses_list(tmp);
-    dwavdapi_virus *virus   = NULL;
-
-    AV *viruses_arr = (AV *)sv_2mortal((SV *)newAV());
-    HV *virus_hash  = NULL;
-
-    AV *objects_arr = NULL;
-    HV *object_hash = NULL;
+    viruses     = dwavdapi_station_statistics_viruses_list(tmp);
+    viruses_arr = (AV *)sv_2mortal((SV *)newAV());
 
     if (viruses) {
+      unsigned    objects_count;
+      const char *virus_name;
+      char       *str;
+
       do {
         virus_hash = (HV *)sv_2mortal((SV *)newHV());
         virus      = (dwavdapi_virus *)dwavdapi_list_current_data(viruses);
 
-        unsigned    objects_count = dwavdapi_virus_infected_objects_count(virus);
-        const char *virus_name    = dwavdapi_virus_name(virus);
+        objects_count = dwavdapi_virus_infected_objects_count(virus);
+        virus_name    = dwavdapi_virus_name(virus);
 
         hv_store(virus_hash, "objects_count", sizeof("objects_count") - 1, newSVuv(objects_count), 0);
         hv_store(virus_hash, "name", sizeof("name") - 1, newSVpv(virus_name, strlen(virus_name)), 0);
 
         objects     = dwavdapi_virus_infected_objects_list(virus);
         objects_arr = (AV *)sv_2mortal((SV *)newAV());
-
-        char *str;
 
         do {
           object = (dwavdapi_infected_object *)dwavdapi_list_current_data(objects);
@@ -3855,7 +3867,7 @@ dwavd::group
 new(CLASS, handle)
   char *CLASS
   dwavd::server handle
-INIT:
+PREINIT:
   dwavd_group *group = NULL;
 CODE:
   if (!handle)
@@ -3912,12 +3924,12 @@ Returns: 1 if operation is successful, 0 - otherwise.
 bool
 create(self)
   dwavd::group self
-INIT:
+PREINIT:
   char *id = NULL;
 CODE:
   if (dwavdapi_group_add(self->handle, self->group, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_group_get_info(self->handle, &self->group, id);
-    dwavdapi_strfree(&id);
+    free(id);
   }
   else {
     RETVAL = 0;
@@ -4208,7 +4220,7 @@ Example:
 SV* 
 child_groups(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned groups_count = dwavdapi_group_child_groups_count(self->group);
   char         **child_groups = dwavdapi_group_child_groups_array(self->group);
@@ -4268,7 +4280,7 @@ Example:
 SV* 
 emails(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned emails_count = dwavdapi_group_emails_count(self->group);
   char         **emails       = dwavdapi_group_emails_array(self->group);
@@ -4506,7 +4518,7 @@ Example:
 SV *
 admins(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned admins_count = dwavdapi_group_admins_count(self->group);
   char         **admins       = dwavdapi_group_admins_array(self->group);
@@ -4559,7 +4571,7 @@ Example:
 SV* 
 stations(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned stations_count = dwavdapi_group_stations_count(self->group);
   char         **stations       = dwavdapi_group_stations_array(self->group);
@@ -4599,7 +4611,7 @@ Example:
 SV *
 rights(self)
   dwavd::group self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = dwavdapi_group_rights_list(self->group);
   dwavdapi_right *group   = NULL;
   HV             *rh      = NULL;
@@ -4657,7 +4669,7 @@ Example:
 SV*
 key(self)
   dwavd::group self
-INIT:
+PREINIT:
   HV           *rh  = (HV *)sv_2mortal((SV *)newHV());
   dwavdapi_key *key = dwavdapi_group_key(self->group);
   const char   *inherited_group_id;
@@ -4719,9 +4731,9 @@ send_message(self, message, url_text="", url="", logo="", logo_url="", logo_text
   const char  *logo
   const char  *logo_url
   const char  *logo_text
-CODE:
+PREINIT:
   dwavdapi_message *mes = dwavdapi_message_init();
-
+CODE:
   if (!mes)
     croak("Unable to send group message because of memory allocation error.");
 
@@ -4765,140 +4777,156 @@ statistics(self, from, till, virtop)
   unsigned int from
   unsigned int till
   unsigned int virtop
-INIT:
-  dwavdapi_group_statistics *tmp     = NULL;
-  HV                        *results = NULL;
+PREINIT:
+  dwavdapi_group_statistics         *tmp = NULL;
+  HV                                *results;
+
+  double                             large_stat;
+  unsigned                           long stat;
+
+  HV                                *scans;
+  dwavdapi_statistics_scans          scans_lst;
+
+  HV                                *state;
+  dwavdapi_statistics_stations_state state_lst;
+
+  HV                                *infections;
+  dwavdapi_statistics_infections     infections_lst;
+
+  dwavdapi_list                     *objects;
+  dwavdapi_infected_object          *object;
+  AV                                *objects_arr;
+  HV                                *object_hash;
+
+  dwavdapi_list                     *viruses;
+  dwavdapi_virus                    *virus;
+  AV                                *viruses_arr;
+  HV                                *virus_hash;
 CODE:
   if (dwavdapi_group_get_statistics(self->handle, &tmp, self->group->id, from, till, virtop) == DWAVDAPI_SUCCESS && tmp) {
     results = (HV *)sv_2mortal((SV *)newHV());
 
     /* Scan stats */
 
-    HV                       *scans     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_scans scans_lst = dwavdapi_group_statistics_scans(tmp);
+    scans     = (HV *)sv_2mortal((SV *)newHV());
+    scans_lst = dwavdapi_group_statistics_scans(tmp);
 
-    double scans_size = scans_lst.size;
-    hv_store(scans, "size", sizeof("size") - 1, newSVnv(scans_size), 0);
+    large_stat = scans_lst.size;
+    hv_store(scans, "size", sizeof("size") - 1, newSVnv(large_stat), 0);
 
-    double scans_files = scans_lst.files;
-    hv_store(scans, "files", sizeof("files") - 1, newSVnv(scans_files), 0);
+    large_stat = scans_lst.files;
+    hv_store(scans, "files", sizeof("files") - 1, newSVnv(large_stat), 0);
 
-    unsigned long scans_infected = scans_lst.infected;
-    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(scans_infected), 0);
+    stat = scans_lst.infected;
+    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_deleted = scans_lst.deleted;
-    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(scans_deleted), 0);
+    stat = scans_lst.deleted;
+    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_moved = scans_lst.moved;
-    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(scans_moved), 0);
+    stat = scans_lst.moved;
+    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_cured = scans_lst.cured;
-    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(scans_cured), 0);
+    stat = scans_lst.cured;
+    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_errors = scans_lst.errors;
-    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(scans_errors), 0);
+    stat = scans_lst.errors;
+    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_renamed = scans_lst.renamed;
-    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(scans_renamed), 0);
+    stat = scans_lst.renamed;
+    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_locked = scans_lst.locked;
-    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(scans_locked), 0);
+    stat = scans_lst.locked;
+    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
     hv_store(results, "scans", sizeof("scans") - 1, newRV((SV *)scans), 0);
 
     /* Stations states */
 
-    HV                                *state     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_stations_state state_lst = dwavdapi_group_statistics_stations_state(tmp);
+    state     = (HV *)sv_2mortal((SV *)newHV());
+    state_lst = dwavdapi_group_statistics_stations_state(tmp);
 
-    unsigned long state_online = state_lst.online;
-    hv_store(state, "infected", sizeof("infected") - 1, newSVuv(state_online), 0);
+    stat = state_lst.online;
+    hv_store(state, "infected", sizeof("infected") - 1, newSVuv(stat), 0);
 
-    unsigned long state_deinstalled = state_lst.deinstalled;
-    hv_store(state, "deinstalled", sizeof("deinstalled") - 1, newSVuv(state_deinstalled), 0);
+    stat = state_lst.deinstalled;
+    hv_store(state, "deinstalled", sizeof("deinstalled") - 1, newSVuv(stat), 0);
 
-    unsigned long state_blocked = state_lst.blocked;
-    hv_store(state, "blocked", sizeof("blocked") - 1, newSVuv(state_blocked), 0);
+    stat = state_lst.blocked;
+    hv_store(state, "blocked", sizeof("blocked") - 1, newSVuv(stat), 0);
 
-    unsigned long state_expired = state_lst.expired;
-    hv_store(state, "expired", sizeof("expired") - 1, newSVuv(state_expired), 0);
+    stat = state_lst.expired;
+    hv_store(state, "expired", sizeof("expired") - 1, newSVuv(stat), 0);
 
-    unsigned long state_offline = state_lst.offline;
-    hv_store(state, "offline", sizeof("offline") - 1, newSVuv(state_offline), 0);
+    stat = state_lst.offline;
+    hv_store(state, "offline", sizeof("offline") - 1, newSVuv(stat), 0);
 
-    unsigned long state_activated = state_lst.activated;
-    hv_store(state, "activated", sizeof("activated") - 1, newSVuv(state_activated), 0);
+    stat = state_lst.activated;
+    hv_store(state, "activated", sizeof("activated") - 1, newSVuv(stat), 0);
 
-    unsigned long state_unactivated = state_lst.unactivated;
-    hv_store(state, "unactivated", sizeof("unactivated") - 1, newSVuv(state_unactivated), 0);
+    stat = state_lst.unactivated;
+    hv_store(state, "unactivated", sizeof("unactivated") - 1, newSVuv(stat), 0);
 
-    unsigned long state_total = state_lst.total;
-    hv_store(state, "total", sizeof("total") - 1, newSVuv(state_total), 0);
+    stat = state_lst.total;
+    hv_store(state, "total", sizeof("total") - 1, newSVuv(stat), 0);
 
     hv_store(results, "state", sizeof("state") - 1, newRV((SV *)state), 0);
 
     /* Infections */
 
-    HV                            *infections     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_infections infections_lst = dwavdapi_group_statistics_infections(tmp);
+    infections     = (HV *)sv_2mortal((SV *)newHV());
+    infections_lst = dwavdapi_group_statistics_infections(tmp);
 
-    unsigned long infections_deleted = infections_lst.deleted;
-    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(infections_deleted), 0);
+    stat = infections_lst.deleted;
+    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_cured = infections_lst.cured;
-    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(infections_cured), 0);
+    stat = infections_lst.cured;
+    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_incurable = infections_lst.incurable;
-    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(infections_incurable), 0);
+    stat = infections_lst.incurable;
+    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_moved = infections_lst.moved;
-    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(infections_moved), 0);
+    stat = infections_lst.moved;
+    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_locked = infections_lst.locked;
-    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(infections_locked), 0);
+    stat = infections_lst.locked;
+    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_renamed = infections_lst.renamed;
-    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(infections_renamed), 0);
+    stat = infections_lst.renamed;
+    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_errors = infections_lst.errors;
-    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(infections_errors), 0);
+    stat = infections_lst.errors;
+    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_ignored = infections_lst.ignored;
-    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(infections_ignored), 0);
+    stat = infections_lst.ignored;
+    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_total = infections_lst.total;
-    hv_store(infections, "total", sizeof("total") - 1, newSVuv(infections_total), 0);
+    stat = infections_lst.total;
+    hv_store(infections, "total", sizeof("total") - 1, newSVuv(stat), 0);
 
     hv_store(results, "infections", sizeof("infections") - 1, newRV((SV *)infections), 0);
 
     /* Viruses */
 
-    dwavdapi_list            *objects;
-    dwavdapi_infected_object *object;
-    dwavdapi_list            *viruses = dwavdapi_group_statistics_viruses_list(tmp);
-    dwavdapi_virus           *virus;
-
-    AV *viruses_arr = (AV *)sv_2mortal((SV *)newAV());
-    HV *virus_hash;
-
-    AV *objects_arr;
-    HV *object_hash;
+    viruses     = dwavdapi_group_statistics_viruses_list(tmp);
+    viruses_arr = (AV *)sv_2mortal((SV *)newAV());
 
     if (viruses) {
+      unsigned    objects_count;
+      const char *virus_name;
+      char       *str;
+
       do {
         virus_hash = (HV *)sv_2mortal((SV *)newHV());
         virus      = (dwavdapi_virus *)dwavdapi_list_current_data(viruses);
 
-        unsigned objects_count = dwavdapi_virus_infected_objects_count(virus);
-        const char *virus_name = dwavdapi_virus_name(virus);
+        objects_count = dwavdapi_virus_infected_objects_count(virus);
+        virus_name    = dwavdapi_virus_name(virus);
 
         hv_store(virus_hash, "objects_count", sizeof("objects_count") - 1, newSVuv(objects_count), 0);
         hv_store(virus_hash, "name", sizeof("name") - 1, newSVpv(virus_name, strlen(virus_name)), 0);
 
         objects     = dwavdapi_virus_infected_objects_list(virus);
         objects_arr = (AV *)sv_2mortal((SV *)newAV());
-
-        char *str;
 
         do {
           object = (dwavdapi_infected_object *)dwavdapi_list_current_data(objects);
@@ -5044,7 +5072,7 @@ dwavd::tariff
 new(CLASS, handle)
   char *CLASS
   dwavd::server handle
-INIT:
+PREINIT:
   dwavd_tariff *tariff = NULL;
 CODE:
   if (!handle)
@@ -5100,12 +5128,12 @@ Returns: 1 if operation is successful, 0 - otherwise.
 bool
 create(self)
   dwavd::tariff self
-INIT:
+PREINIT:
   char *id = NULL;
 CODE:
   if (dwavdapi_tariff_add(self->handle, self->tariff, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_tariff_get_info(self->handle, &self->tariff, id);
-    dwavdapi_strfree(&id);
+    free(id);
   }
   else {
     RETVAL = 0;
@@ -5404,7 +5432,7 @@ Example:
 SV* 
 child_groups(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned groups_count = dwavdapi_group_child_groups_count(self->group);
   char         **child_groups = dwavdapi_group_child_groups_array(self->group);
@@ -5465,7 +5493,7 @@ Example:
 SV *
 emails(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned emails_count = dwavdapi_group_emails_count(self->group);
   char         **emails       = dwavdapi_group_emails_array(self->group);
@@ -5603,7 +5631,7 @@ Example:
 SV *
 components(self)
 dwavd::group self
-INIT:
+PREINIT:
   dwavdapi_list      *lst     = dwavdapi_group_components_list(self->group);
   dwavdapi_component *group   = NULL;
   HV                 *rh      = NULL;
@@ -5660,7 +5688,7 @@ Example:
 SV* 
 admins(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned admins_count = dwavdapi_group_admins_count(self->group);
   char         **admins       = dwavdapi_group_admins_array(self->group);
@@ -5712,7 +5740,7 @@ Example:
 SV *
 stations(self)
   dwavd::group self
-INIT:
+PREINIT:
   unsigned       i;
   const unsigned stations_count = dwavdapi_group_stations_count(self->group);
   char         **stations       = dwavdapi_group_stations_array(self->group);
@@ -5768,7 +5796,7 @@ Example:
 SV *
 rights(self)
   dwavd::group self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = dwavdapi_group_rights_list(self->group);
   dwavdapi_right *group   = NULL;
   HV             *rh      = NULL;
@@ -5967,39 +5995,43 @@ Module data is represented as array with keys:
 
 SV *
 get_info(self)
-dwavd::server self
-INIT:
+  dwavd::server self
+PREINIT:
   dwavdapi_server *lst = NULL;
   HV              *rh  = NULL;
 CODE:
   if (dwavdapi_srv_get_info(self, &lst) == DWAVDAPI_SUCCESS && lst) {
+    unsigned long stat;
+    int           signed_stat;
+    const char   *str;
+
     rh = (HV *)sv_2mortal((SV *)newHV());
 
-    unsigned long uptime = lst->uptime;
-    hv_store(rh, "uptime", sizeof("uptime") - 1, newSVuv(uptime), 0);
+    stat = lst->uptime;
+    hv_store(rh, "uptime", sizeof("uptime") - 1, newSVuv(stat), 0);
 
-    unsigned long groups_total = lst->groups_total;
-    hv_store(rh, "groups_total", sizeof("groups_total") - 1, newSVuv(groups_total), 0);
+    stat = lst->groups_total;
+    hv_store(rh, "groups_total", sizeof("groups_total") - 1, newSVuv(stat), 0);
 
-    unsigned long groups_custom = lst->groups_custom;
-    hv_store(rh, "groups_custom", sizeof("groups_custom") - 1, newSVuv(groups_custom), 0);
+    stat = lst->groups_custom;
+    hv_store(rh, "groups_custom", sizeof("groups_custom") - 1, newSVuv(stat), 0);
 
-    unsigned long groups_system = lst->groups_system;
-    hv_store(rh, "groups_system", sizeof("groups_system") - 1, newSVuv(groups_system), 0);
+    stat = lst->groups_system;
+    hv_store(rh, "groups_system", sizeof("groups_system") - 1, newSVuv(stat), 0);
 
-    unsigned long groups_rate = lst->groups_rate;
-    hv_store(rh, "groups_rate", sizeof("groups_rate") - 1, newSVuv(groups_rate), 0);
+    stat = lst->groups_rate;
+    hv_store(rh, "groups_rate", sizeof("groups_rate") - 1, newSVuv(stat), 0);
 
-    unsigned long stations_total = lst->stations_total;
-    hv_store(rh, "stations_total", sizeof("stations_total") - 1, newSVuv(stations_total), 0);
+    stat = lst->stations_total;
+    hv_store(rh, "stations_total", sizeof("stations_total") - 1, newSVuv(stat), 0);
 
-    int stations_licensed = lst->stations_licensed;
-    hv_store(rh, "stations_licensed", sizeof("stations_licensed") - 1, newSViv(stations_licensed), 0);
+    signed_stat = lst->stations_licensed;
+    hv_store(rh, "stations_licensed", sizeof("stations_licensed") - 1, newSViv(signed_stat), 0);
 
-    int stations_available = lst->stations_available;
-    hv_store(rh, "stations_available", sizeof("stations_available") - 1, newSViv(stations_available), 0);
+    signed_stat = lst->stations_available;
+    hv_store(rh, "stations_available", sizeof("stations_available") - 1, newSViv(signed_stat), 0);
 
-    const char *str = lst->version;
+    str = lst->version;
     if (str)
       hv_store(rh, "version", sizeof("version") - 1, newSVpv(str, strlen(str)), 0);
 
@@ -6081,7 +6113,7 @@ Example:
 SV* 
 admins(self)
   dwavd::server self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = NULL;
   dwavdapi_admin *admin   = NULL;
   HV             *rh      = NULL;
@@ -6136,7 +6168,7 @@ Example:
 SV *
 groups(self)
   dwavd::server self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = NULL;
   dwavdapi_group *group   = NULL;
   HV             *rh      = NULL;
@@ -6187,7 +6219,7 @@ Example:
 SV *
 tariffs(self)
   dwavd::server self
-INIT:
+PREINIT:
   dwavdapi_list  *lst     = NULL;
   dwavdapi_group *group   = NULL;
   HV             *rh      = NULL;
@@ -6247,41 +6279,44 @@ Module data is represented as array with keys:
 SV *
 get_key_info(self)
   dwavd::server self
-INIT:
+PREINIT:
   dwavdapi_server_key *lst = NULL;
   HV                  *rh  = NULL;
 CODE:
   if (dwavdapi_srv_get_key_info(self, &lst) == DWAVDAPI_SUCCESS && lst) {
+    unsigned long stat;
+    const char   *str;
+
     rh  = (HV *)sv_2mortal((SV *)newHV());
 
-    unsigned long value = lst->products;
-    hv_store(rh, "products", sizeof("products") - 1, newSVuv(value), 0);
+    stat = lst->products;
+    hv_store(rh, "products", sizeof("products") - 1, newSVuv(stat), 0);
 
-    unsigned long clients = lst->clients;
-    hv_store(rh, "clients", sizeof("clients") - 1, newSVuv(clients), 0);
+    stat = lst->clients;
+    hv_store(rh, "clients", sizeof("clients") - 1, newSVuv(stat), 0);
 
-    value = lst->user;
-    hv_store(rh, "user", sizeof("user") - 1, newSVuv(value), 0);
+    stat = lst->user;
+    hv_store(rh, "user", sizeof("user") - 1, newSVuv(stat), 0);
 
-    value = lst->servers;
-    hv_store(rh, "servers", sizeof("servers") - 1, newSVuv(value), 0);
+    stat = lst->servers;
+    hv_store(rh, "servers", sizeof("servers") - 1, newSVuv(stat), 0);
 
-    value = lst->dealer;
-    hv_store(rh, "dealer", sizeof("dealer") - 1, newSVuv(value), 0);
+    stat = lst->dealer;
+    hv_store(rh, "dealer", sizeof("dealer") - 1, newSVuv(stat), 0);
 
-    value = lst->antispam;
-    hv_store(rh, "antispam", sizeof("antispam") - 1, newSVuv(value), 0);
+    stat = lst->antispam;
+    hv_store(rh, "antispam", sizeof("antispam") - 1, newSVuv(stat), 0);
 
-    value = lst->created;
-    hv_store(rh, "created", sizeof("created") - 1, newSVuv(value), 0);
+    stat = lst->created;
+    hv_store(rh, "created", sizeof("created") - 1, newSVuv(stat), 0);
 
-    value = lst->expires;
-    hv_store(rh, "expires", sizeof("expires") - 1, newSVuv(value), 0);
+    stat = lst->expires;
+    hv_store(rh, "expires", sizeof("expires") - 1, newSVuv(stat), 0);
 
-    value = lst->activated;
-    hv_store(rh, "activated", sizeof("activated") - 1, newSVuv(value), 0);
+    stat = lst->activated;
+    hv_store(rh, "activated", sizeof("activated") - 1, newSVuv(stat), 0);
 
-    const char *str = lst->md5;
+    str = lst->md5;
     if(str)
       hv_store(rh, "md5", sizeof("md5") - 1, newSVpv(str, strlen(str)), 0);
 
@@ -6331,7 +6366,7 @@ Should be used with server object initialized by init().
 SV *
 repositories(self)
   dwavd::server self
-INIT:
+PREINIT:
   dwavdapi_list              *lst     = NULL;
   dwavdapi_server_repository *rep     = NULL;
   HV                         *rh      = NULL;
@@ -6413,151 +6448,170 @@ statistics(self, from, till, virtop)
   unsigned int  from
   unsigned int  till
   unsigned int  virtop
-INIT:
-  dwavdapi_server_statistics *tmp     = NULL;
-  HV                         *results = NULL;
+PREINIT:
+  dwavdapi_server_statistics        *tmp = NULL;
+  HV                                *results;
+
+  double                             large_stat;
+  unsigned long                      stat;
+
+  HV                                *scans;
+  dwavdapi_statistics_scans          scans_lst;
+
+  HV                                *state;
+  dwavdapi_statistics_stations_state state_lst;
+
+  HV                                *infections;
+  dwavdapi_statistics_infections     infections_lst;
+
+  HV                                *traffic;
+  dwavdapi_statistics_traffic        traffic_lst;
+
+  dwavdapi_list                      *objects;
+  dwavdapi_infected_object           *object;
+  AV                                 *objects_arr;
+  HV                                 *object_hash;
+
+  dwavdapi_list                      *viruses;
+  dwavdapi_virus                     *virus;
+  AV                                 *viruses_arr;
+  HV                                 *virus_hash;
 CODE:
   if (dwavdapi_srv_get_statistics(self, &tmp, from, till, virtop) == DWAVDAPI_SUCCESS && tmp) {
     results = (HV *)sv_2mortal((SV *)newHV());
 
     /* Scan stats */
-    HV                       *scans     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_scans scans_lst = dwavdapi_srv_statistics_scans(tmp);
+    scans     = (HV *)sv_2mortal((SV *)newHV());
+    scans_lst = dwavdapi_srv_statistics_scans(tmp);
 
-    double scans_size = scans_lst.size;
-    hv_store(scans, "size", sizeof("size") - 1, newSVnv(scans_size), 0);
+    large_stat = scans_lst.size;
+    hv_store(scans, "size", sizeof("size") - 1, newSVnv(large_stat), 0);
 
-    double scans_files = scans_lst.files;
-    hv_store(scans, "files", sizeof("files") - 1, newSVnv(scans_files), 0);
+    large_stat = scans_lst.files;
+    hv_store(scans, "files", sizeof("files") - 1, newSVnv(large_stat), 0);
 
-    unsigned long scans_infected = scans_lst.infected;
-    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(scans_infected), 0);
+    stat = scans_lst.infected;
+    hv_store(scans, "infected", sizeof("infected") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_deleted = scans_lst.deleted;
-    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(scans_deleted), 0);
+    stat = scans_lst.deleted;
+    hv_store(scans, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_moved = scans_lst.moved;
-    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(scans_moved), 0);
+    stat = scans_lst.moved;
+    hv_store(scans, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_cured = scans_lst.cured;
-    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(scans_cured), 0);
+    stat = scans_lst.cured;
+    hv_store(scans, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_errors = scans_lst.errors;
-    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(scans_errors), 0);
+    stat = scans_lst.errors;
+    hv_store(scans, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_renamed = scans_lst.renamed;
-    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(scans_renamed), 0);
+    stat = scans_lst.renamed;
+    hv_store(scans, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long scans_locked = scans_lst.locked;
-    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(scans_locked), 0);
+    stat = scans_lst.locked;
+    hv_store(scans, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
     hv_store(results, "scans", sizeof("scans") - 1, newRV((SV *)scans), 0);
 
     /* Station states. */
-    HV                                *state     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_stations_state state_lst = dwavdapi_srv_statistics_stations_state(tmp);
+    state     = (HV *)sv_2mortal((SV *)newHV());
+    state_lst = dwavdapi_srv_statistics_stations_state(tmp);
 
-    unsigned long state_online = state_lst.online;
-    hv_store(state, "infected", sizeof("infected") - 1, newSVuv(state_online), 0);
+    stat = state_lst.online;
+    hv_store(state, "infected", sizeof("infected") - 1, newSVuv(stat), 0);
 
-    unsigned long state_deinstalled = state_lst.deinstalled;
-    hv_store(state, "deinstalled", sizeof("deinstalled") - 1, newSVuv(state_deinstalled), 0);
+    stat = state_lst.deinstalled;
+    hv_store(state, "deinstalled", sizeof("deinstalled") - 1, newSVuv(stat), 0);
 
-    unsigned long state_blocked = state_lst.blocked;
-    hv_store(state, "blocked", sizeof("blocked") - 1, newSVuv(state_blocked), 0);
+    stat = state_lst.blocked;
+    hv_store(state, "blocked", sizeof("blocked") - 1, newSVuv(stat), 0);
 
-    unsigned long state_expired = state_lst.expired;
-    hv_store(state, "expired", sizeof("expired") - 1, newSVuv(state_expired), 0);
+    stat = state_lst.expired;
+    hv_store(state, "expired", sizeof("expired") - 1, newSVuv(stat), 0);
 
-    unsigned long state_offline = state_lst.offline;
-    hv_store(state, "offline", sizeof("offline") - 1, newSVuv(state_offline), 0);
+    stat = state_lst.offline;
+    hv_store(state, "offline", sizeof("offline") - 1, newSVuv(stat), 0);
 
-    unsigned long state_activated = state_lst.activated;
-    hv_store(state, "activated", sizeof("activated") - 1, newSVuv(state_activated), 0);
+    stat = state_lst.activated;
+    hv_store(state, "activated", sizeof("activated") - 1, newSVuv(stat), 0);
 
-    unsigned long state_unactivated = state_lst.unactivated;
-    hv_store(state, "unactivated", sizeof("unactivated") - 1, newSVuv(state_unactivated), 0);
+    stat = state_lst.unactivated;
+    hv_store(state, "unactivated", sizeof("unactivated") - 1, newSVuv(stat), 0);
 
-    unsigned long state_total = state_lst.total;
-    hv_store(state, "total", sizeof("total") - 1, newSVuv(state_total), 0);
+    stat = state_lst.total;
+    hv_store(state, "total", sizeof("total") - 1, newSVuv(stat), 0);
 
     hv_store(results, "state", sizeof("state") - 1, newRV((SV *)state), 0);
 
     /* Infections */
-    HV                            *infections     = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_infections infections_lst = dwavdapi_srv_statistics_infections(tmp);
+    infections     = (HV *)sv_2mortal((SV *)newHV());
+    infections_lst = dwavdapi_srv_statistics_infections(tmp);
 
-    unsigned long infections_deleted = infections_lst.deleted;
-    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(infections_deleted), 0);
+    stat = infections_lst.deleted;
+    hv_store(infections, "deleted", sizeof("deleted") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_cured = infections_lst.cured;
-    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(infections_cured), 0);
+    stat = infections_lst.cured;
+    hv_store(infections, "cured", sizeof("cured") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_incurable = infections_lst.incurable;
-    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(infections_incurable), 0);
+    stat = infections_lst.incurable;
+    hv_store(infections, "incurable", sizeof("incurable") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_moved = infections_lst.moved;
-    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(infections_moved), 0);
+    stat = infections_lst.moved;
+    hv_store(infections, "moved", sizeof("moved") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_locked = infections_lst.locked;
-    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(infections_locked), 0);
+    stat = infections_lst.locked;
+    hv_store(infections, "locked", sizeof("locked") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_renamed = infections_lst.renamed;
-    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(infections_renamed), 0);
+    stat = infections_lst.renamed;
+    hv_store(infections, "renamed", sizeof("renamed") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_errors = infections_lst.errors;
-    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(infections_errors), 0);
+    stat = infections_lst.errors;
+    hv_store(infections, "errors", sizeof("errors") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_ignored = infections_lst.ignored;
-    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(infections_ignored), 0);
+    stat = infections_lst.ignored;
+    hv_store(infections, "ignored", sizeof("ignored") - 1, newSVuv(stat), 0);
 
-    unsigned long infections_total = infections_lst.total;
-    hv_store(infections, "total", sizeof("total") - 1, newSVuv(infections_total), 0);
+    stat = infections_lst.total;
+    hv_store(infections, "total", sizeof("total") - 1, newSVuv(stat), 0);
 
     hv_store(results, "infections", sizeof("infections") - 1, newRV((SV *)infections), 0);
 
     /* Traffic */
-    HV                          *traffic = (HV *)sv_2mortal((SV *)newHV());
-    dwavdapi_statistics_traffic lst      = dwavdapi_srv_statistics_traffic(tmp);
+    traffic     = (HV *)sv_2mortal((SV *)newHV());
+    traffic_lst = dwavdapi_srv_statistics_traffic(tmp);
 
-    double in = lst.in;
-    hv_store(traffic, "in", sizeof("in") - 1, newSVnv(in), 0);
+    large_stat = traffic_lst.in;
+    hv_store(traffic, "in", sizeof("in") - 1, newSVnv(large_stat), 0);
 
-    double out = lst.out;
-    hv_store(traffic, "out", sizeof("out") - 1, newSVnv(out), 0);
+    large_stat = traffic_lst.out;
+    hv_store(traffic, "out", sizeof("out") - 1, newSVnv(large_stat), 0);
 
-    double total = lst.total;
-    hv_store(traffic, "total", sizeof("total") - 1, newSVnv(total), 0);
+    large_stat = traffic_lst.total;
+    hv_store(traffic, "total", sizeof("total") - 1, newSVnv(large_stat), 0);
 
     hv_store(results, "traffic", sizeof("traffic") - 1, newRV((SV *)traffic), 0);
 
     /* Viruses */
-    dwavdapi_list            *objects = NULL;
-    dwavdapi_infected_object *object  = NULL;
-    dwavdapi_list            *viruses = dwavdapi_srv_statistics_viruses_list(tmp);
-    dwavdapi_virus           *virus   = NULL;
-
-    AV *viruses_arr = (AV *)sv_2mortal((SV *)newAV());
-    HV *virus_hash;
-
-    AV *objects_arr;
-    HV *object_hash;
+    viruses     = dwavdapi_srv_statistics_viruses_list(tmp);
+    viruses_arr = (AV *)sv_2mortal((SV *)newAV());
 
     if (viruses) {
+      const char *virus_name;
+      const char *str;
+      unsigned    objects_count;
+
       do {
         virus_hash = (HV *)sv_2mortal((SV *)newHV());
         virus      = (dwavdapi_virus *)dwavdapi_list_current_data(viruses);
 
-        const char *virus_name = dwavdapi_virus_name(virus);
-        unsigned objects_count = dwavdapi_virus_infected_objects_count(virus);
+        virus_name    = dwavdapi_virus_name(virus);
+        objects_count = dwavdapi_virus_infected_objects_count(virus);
 
         hv_store(virus_hash, "objects_count", sizeof("objects_count") - 1, newSVuv(objects_count), 0);
-        hv_store(virus_hash, "name", sizeof("name") - 1, newSVpv(virus_name, strlen(virus_name)), 0);
+        hv_store(virus_hash, "name",          sizeof("name") - 1,          newSVpv(virus_name, strlen(virus_name)), 0);
 
         objects     = dwavdapi_virus_infected_objects_list(virus);
         objects_arr = (AV *)sv_2mortal((SV *)newAV());
-
-        char *str;
 
         do {
           object = (dwavdapi_infected_object *)dwavdapi_list_current_data(objects);
@@ -6581,9 +6635,9 @@ CODE:
             if(str)
               hv_store(object_hash, "station_uuid", sizeof("station_uuid") - 1, newSVpv(str, strlen(str)), 0);
 
-            hv_store(object_hash, "originator", sizeof("originator") - 1, newSVuv(object->originator), 0);
-            hv_store(object_hash, "treatment", sizeof("treatment") - 1, newSVuv(object->treatment), 0);
-            hv_store(object_hash, "type", sizeof("type") - 1, newSVuv(object->type), 0);
+            hv_store(object_hash, "originator",     sizeof("originator") - 1,     newSVuv(object->originator), 0);
+            hv_store(object_hash, "treatment",      sizeof("treatment") - 1,      newSVuv(object->treatment), 0);
+            hv_store(object_hash, "type",           sizeof("type") - 1,           newSVuv(object->type), 0);
             hv_store(object_hash, "infection_type", sizeof("infection_type") - 1, newSVuv(object->infection_type), 0);
 
             av_push(objects_arr, newRV((SV *)object_hash));
@@ -6598,11 +6652,12 @@ CODE:
     hv_store(results, "viruses", sizeof("viruses") - 1, newRV((SV *)viruses_arr), 0);
 
     /* Groups and stations */
-    hv_store(results, "groups_total", sizeof("groups_total") - 1, newSVuv(tmp->groups_total), 0);
-    hv_store(results, "groups_custom", sizeof("groups_custom") - 1, newSVuv(tmp->groups_custom), 0);
-    hv_store(results, "groups_system", sizeof("groups_system") - 1, newSVuv(tmp->groups_system), 0);
-    hv_store(results, "groups_rate", sizeof("groups_rate") - 1, newSVuv(tmp->groups_rate), 0);
+    hv_store(results, "groups_total",   sizeof("groups_total") - 1,   newSVuv(tmp->groups_total), 0);
+    hv_store(results, "groups_custom",  sizeof("groups_custom") - 1,  newSVuv(tmp->groups_custom), 0);
+    hv_store(results, "groups_system",  sizeof("groups_system") - 1,  newSVuv(tmp->groups_system), 0);
+    hv_store(results, "groups_rate",    sizeof("groups_rate") - 1,    newSVuv(tmp->groups_rate), 0);
     hv_store(results, "stations_total", sizeof("stations_total") - 1, newSVuv(tmp->stations_total), 0);
+
     RETVAL = newRV((SV *)results);
 
     dwavdapi_srv_statistics_destroy(tmp);
