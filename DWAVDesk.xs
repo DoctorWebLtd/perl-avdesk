@@ -845,7 +845,7 @@ CODE:
 
   dwavdapi_strerror(&error, errcode);
   hv_store(array, "string", sizeof("string") - 1, newSVpv(error, strlen(error)), 0);
-  free(error);
+  dwavdapi_strfree(&error);
 
   if (items > 0 && sv_isobject(ST(0))) {
     dwavd__server handle = INT2PTR(dwavd__server, SvIV((SV *)SvRV(ST(0))));
@@ -855,7 +855,7 @@ CODE:
 
     dwavdapi_srv_error(handle, &error);
     hv_store(array, "srvstring", sizeof("srvstring") - 1, newSVpv(error, strlen(error)), 0);
-    free(error);
+    dwavdapi_strfree(&error);
   }
 
   RETVAL = newRV((SV *)array);
@@ -1017,7 +1017,7 @@ PREINIT:
 CODE:
   if (dwavdapi_admin_add(self->handle, self->admin, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_admin_get_info(self->handle, &self->admin, dwavdapi_admin_login(self->admin));
-    free(id);
+    dwavdapi_strfree(&id);
   }
   else {
     RETVAL = 0;
@@ -1746,7 +1746,7 @@ PREINIT:
 CODE:
   if (dwavdapi_station_add(self->handle, self->station, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_station_get_info(self->handle, &self->station, id);
-    free(id);
+    dwavdapi_strfree(&id);
   }
   else {
     RETVAL = 0;
@@ -3955,7 +3955,7 @@ PREINIT:
 CODE:
   if (dwavdapi_group_add(self->handle, self->group, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_group_get_info(self->handle, &self->group, id);
-    free(id);
+    dwavdapi_strfree(&id);
   }
   else {
     RETVAL = 0;
@@ -5175,7 +5175,7 @@ PREINIT:
 CODE:
   if (dwavdapi_tariff_add(self->handle, self->tariff, &id) == DWAVDAPI_SUCCESS) {
     RETVAL = !dwavdapi_tariff_get_info(self->handle, &self->tariff, id);
-    free(id);
+    dwavdapi_strfree(&id);
   }
   else {
     RETVAL = 0;

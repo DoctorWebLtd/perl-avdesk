@@ -12,7 +12,7 @@ sub libs {
       '-L/usr/local/lib -ldwavdapi';
     }
   } elsif ($^O =~ /mswin32/i || $^O =~ /cygwin/i) {
-    '-L .\\libdwavdapi\\lib dwavdapi.lib ';
+    '-L .\\dwavdapi\\lib dwavdapi.lib ';
   } else {
     die("Unsupported system: $^O");
   }
@@ -22,7 +22,7 @@ sub includes {
   if ($^O =~ /linux/i) {
     '-I.';
   } elsif ($^O =~ /mswin32/i || $^O =~ /cygwin/i) {
-    '-I .\\libdwavdapi\\include';
+    '-I .\\dwavdapi\\include';
   } else {
     die("Unknown system: $^O"); 
   }
