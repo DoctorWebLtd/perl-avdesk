@@ -35,3 +35,6 @@ within distribution package.
 --
 * http://www.drweb.com
 * http://www.av-desk.com
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/DoctorWebLtd/perl-avdesk/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
