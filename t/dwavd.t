@@ -3,9 +3,7 @@
 
 #########################
 
-# change 'tests => 1' to 'tests => last_test_to_print';
-
-use Test::More tests => 274;
+use Test::More tests => 281;
 BEGIN { use_ok('DWAVDesk') };
 
 use Time::Local;
@@ -246,7 +244,7 @@ SKIP: {
     $st->set_street("ch_station_street");
     $till = time() + 24 * 60 * 60;
     $st->set_expires_time($till);
-    my $year  = ${localtime()}[5] + 1900;
+    my $year  = localtime()->year() + 1900;
     my $begin = timelocal(0,0,0,1,0,$year + 1);
     my $end   = timelocal(0,0,0,1,0,$year + 2);
     $st->set_block($begin, $end);
@@ -303,9 +301,13 @@ ok($admin->set_name("ch_name".rand()), "Admin: set name /update");
 ok($admin->set_password("ch_password"), "Admin: set password /update");
 ok($admin->set_last_name("ch_last_name"), "Admin: set last name /update");
 ok($admin->set_middle_name( "ch_middle_name"), "Admin: set middle name /update");
-ok($admin->set_readonly(1), "Admin: set readonly /update");
-ok($admin->set_readonly(10), "Admin: set readonly /update");
-ok($admin->set_readonly(0), "Admin: set readonly /update");
+ok($admin->set_readonly(1), "Admin: set readonly /update (1)");
+ok($admin->set_readonly(10), "Admin: set readonly /update (10)");
+ok($admin->set_readonly(0), "Admin: set readonly /update (0)");
+ok($admin->set_limited(1), "Admin: set limited /update (1)");
+ok($admin->set_limited(0), "Admin: set limited /update (0)");
+ok($admin->set_may_create_admin(0), "Admin: set may create admin /update (0)");
+ok($admin->set_may_create_admin(1), "Admin: set may create admin /update (1)");
 ok($admin->delete_from_group($parent_group_id), "Admin: delete from group /update");
 ok($admin->set_description("ch_description"), "Admin: set description /update");
 ok($admin->update(), "Admin: update.");
@@ -321,6 +323,9 @@ ok($admin->created_time(), "Admin: get created time.");
 ok($admin->modified_time() > $admin->created_time(), "Admin: get modified time.");
 ok($admin->is_global_admin(), "Admin: get type global admin.");
 ok(!$admin->is_group_admin(), "Admin: get type group admin.");
+ok(!$admin->is_limited(), "Admin: get type limited admin.");
+ok(!$admin->is_readonly(), "Admin: get type readonly admin.");
+ok($amdin->may_create_admin(), "Admin: get attribute may create admins");
 ok($admin->groups_count() == 0, "Admin: get groups count.");
 
 # Admin list

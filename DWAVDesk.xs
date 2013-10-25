@@ -1543,6 +1543,52 @@ CODE:
 OUTPUT:
   RETVAL
 
+=head3 set_may_create_admin()
+
+Specifies whether admin may create other admins.
+
+Args:
+
+    bool_flag - 1 - if admin may create other admins, otherwise - 0
+
+Should be used with administrator object initialized by new().
+
+Returns: 1 if operation is successful, 0 - otherwise.
+
+=cut
+
+bool
+set_may_create_admin(self, val)
+  dwavd::admin self
+  unsigned     val
+CODE:
+  RETVAL = !dwavdapi_admin_set_may_create_admins(self->admin, val);
+OUTPUT:
+  RETVAL
+
+=head3 set_limited()
+
+Specifies whether admin has limited rights.
+
+Args:
+
+    bool_flag - 1 - if admin has limited rights, otherwise - 0
+
+Should be used with administrator object initialized by new().
+
+Returns: 1 if operation is successful, 0 - otherwise.
+
+=cut
+
+bool
+set_limited(self, val)
+  dwavd::admin self
+  unsigned     val
+CODE:
+  RETVAL = !dwavdapi_admin_set_limited_rights(self->admin, val);
+OUTPUT:
+  RETVAL
+
 =head3 is_readonly()
 
 Returns read only restriction for administrator.
@@ -1590,6 +1636,38 @@ is_group_admin(self)
   dwavd::admin self
 CODE:
   RETVAL = dwavdapi_admin_is_group_admin(self->admin);
+OUTPUT:
+  RETVAL
+
+=head3 may_create_admin()
+
+Returns 1 is administrator may create other admins, otherwise - 0.
+
+Should be used with administrator object initialized by new().
+
+=cut
+
+bool
+may_create_admin(self)
+  dwavd::admin self
+CODE:
+  RETVAL = dwavdapi_admin_may_create_admins(self->admin);
+OUTPUT:
+  RETVAL
+
+=head3 is_limited()
+
+Returns 1 is administrator has limited rights, otherwise - 0.
+
+Should be used with administrator object initialized by new().
+
+=cut
+
+bool
+is_limited(self)
+  dwavd::admin self
+CODE:
+  RETVAL = dwavdapi_admin_has_limited_rights(self->admin);
 OUTPUT:
   RETVAL
 
