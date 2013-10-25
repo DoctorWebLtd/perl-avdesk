@@ -325,7 +325,7 @@ ok($admin->is_global_admin(), "Admin: get type global admin.");
 ok(!$admin->is_group_admin(), "Admin: get type group admin.");
 ok(!$admin->is_limited(), "Admin: get type limited admin.");
 ok(!$admin->is_readonly(), "Admin: get type readonly admin.");
-ok($amdin->may_create_admin(), "Admin: get attribute may create admins");
+ok($admin->may_create_admin(), "Admin: get attribute may create admins");
 ok($admin->groups_count() == 0, "Admin: get groups count.");
 
 # Admin list
